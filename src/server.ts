@@ -14,6 +14,24 @@ app.get("/patients", async () => {
   return { patients };
 });
 
+app.get<{ Params: { id: string } }>("/patients/:id", async (request, reply) => {
+  try {
+    const patient = await prisma.patient.findUnique({
+      where: {
+        id: request.params.id,
+      },
+    });
+
+    if (!patient) {
+      reply.status(404).send({ error: "Patient not found" });
+    } else {
+      reply.send({ patient });
+    }
+  } catch (error) {
+    reply.status(500).send({ error: "Internal server error" });
+  }
+});
+
 app.post("/patients", async (request, reply) => {
   const createPatientSchema = z.object({
     name: z.string(),
